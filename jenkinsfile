@@ -18,6 +18,9 @@ pipeline {
             steps {
                 script {
                     if (params.DKIM_Option.contains('Build')) {
+                        sh "mvn compile"
+                        sh "mvn package"
+                        sh "cp target/shipping-1.0.jar shipping.jar"
                         sh "docker build -t ${DOCKERURL}/${DOCKERUSR}/${COMPONENT}:${params.tag} ."
                     }
                     if (params.DKIM_Option.contains('Push')) {
