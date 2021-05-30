@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+    environment {
+        DOCKERHUB = credentials('dockerhub')
+        DOCKERURL = "docker.io"
+        DOCKERUSR = "jithendar"
+        COMPONENT = "shipping"
+    }
+
+    parameters {
+    choice(name: 'DKIM_Option', choices: ['Build DKIM', 'Push DKIM',], description: 'Pick Docker Option')
+    text(name: 'tag', defaultValue: '', description: 'Enter the DKIM tag number/name')
+    }
+
+    stages {
+        
+        stage ('Build DKIM ${env.COMPONENT}') {
+            steps {
+                script {
+                    if (params.DKIM_Option.contains('Build')) {
+                        sh "docker build -t ${DOCKERURL}/${DOCKERUSR}/${COMPONENT}:${params.tag} ."
+                    }
+                    if (params.DKIM_Option.contains('Push')) {
+                        sh "docker login -u $DOCKERHUB_USR -p $DOCKERHUB_PSW"
+                        sh "docker push ${DOCKERURL}/${DOCKERUSR}/${COMPONENT}:${params.tag}"
+                    }
+                }
+            }
+            }
+            }
+    post {
+        success {
+            sh 'docker logout'
+            }
+        }
+        }
