@@ -16,7 +16,6 @@ pipeline {
                 mvn package
                 cp target/shipping-1.0.jar shipping.jar
                 tag=$(git tag | xargs -I@ git log --format=format:"%ai @%n" -1 @ | sort -k2 | tail -n 1 | awk '{print $4}')
-                echo $tag
                 docker build -t ${DOCKERURL}/${DOCKERUSR}/${COMPONENT}:$tag .
                 '''
             }
