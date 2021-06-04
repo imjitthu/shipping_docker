@@ -9,35 +9,67 @@ pipeline {
 
     stages {
         
-        stage ('Build DKIM shipping') {
+        stage ('Build DKIM Shipping') {
+            when {
+                triggeredBy 'github'
+                 }
             steps {
                 sh '''
-                mvn compile
-                mvn package
-                cp target/shipping-1.0.jar shipping.jar
                 tag=$(git tag | xargs -I@ git log --format=format:"%ai @%n" -1 @ | sort -k2 | tail -n 1 | awk '{print $4}')
                 docker build -t ${DOCKERURL}/${DOCKERUSR}/${COMPONENT}:$tag .
                 '''
-            }
-            }
-        stage ('Push DKIM shipping') {
+                }
+                }
+        stage ('Push DKIM Shipping') {
+            when {
+                triggeredBy 'github'
+                 }
             steps {
                 sh "docker login -u $DOCKERHUB_USR -p $DOCKERHUB_PSW"
                 sh '''
                 tag=$(git tag | xargs -I@ git log --format=format:"%ai @%n" -1 @ | sort -k2 | tail -n 1 | awk '{print $4}')
                 docker push ${DOCKERURL}/${DOCKERUSR}/${COMPONENT}:$tag
                 '''
+                sh 'docker logout'
+                sh 'docker rmi -f $(docker images -q)'
                 }
               }
+        stage ('Create POD with KubeCTL') {
+            when {
+                triggeredBy user
+                //triggeredBy cause: "UserIdCause", detail: "jithendar"
+                 }
+            steps {
+                echo "Creating POD with KubeCTL"
+                }
+                }
             }
+
     post {
-        success {
-            sh 'docker logout'
-            sh 'docker rmi -f $(docker images -q)'
-            }
         always { 
             cleanWs()
         }
      }
 }
 
+
+
+// when {
+//     anyOf {
+//         triggeredBy cause: 'UpstreamCause', detail: 'Job A'
+//         triggeredBy cause: 'UpstreamCause', detail: 'Job C'
+//     }
+// }
+
+
+// triggeredBy
+
+// Execute the stage when the current build has been triggered by the param given. For example:
+
+// when { triggeredBy 'SCMTrigger' }
+
+// when { triggeredBy 'TimerTrigger' }
+
+// when { triggeredBy 'UpstreamCause' }
+
+// when { triggeredBy cause: "UserIdCause", detail: "vlinde" }
