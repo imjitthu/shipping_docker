@@ -42,7 +42,11 @@ pipeline {
                 triggeredBy 'user'
                  }
             steps {
-                sh 'kubectl apply -f pod.yml'
+                sh '''
+                tag=$(git tag | xargs -I@ git log --format=format:"%ai @%n" -1 @ | sort -k2 | tail -n 1 | awk '{print $4}')
+                sed 's/IMAGETAG/$tag/' pod.yml'
+                kubectl apply -f pod.yml
+                '''
                 }
                 }
             }
