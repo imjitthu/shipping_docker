@@ -34,7 +34,6 @@ pipeline {
                 docker push ${DOCKERURL}/${DOCKERUSR}/${COMPONENT}:$tag
                 '''
                 sh 'docker logout'
-                sh 'docker rmi -f $(docker images -q)'
                 }
               }
         stage ('Create POD with KubeCTL') {
