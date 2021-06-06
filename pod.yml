@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: shipping
-          image: jithendar/shipping:10.5
+          image: jithendar/shipping:image_tag
           ports:
             - containerPort: 8080
           env:
